@@ -2,10 +2,13 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'postgresql://ecommerce_db_3krz_user:WVfim87kN6bqvbbIvxlNWtAHLcw6PpZU@dpg-d0d0u6idbo4c73fuscmg-a/ecommerce_db_3krz')
+
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -44,14 +47,16 @@ def home():
 def register():
     if request.method == 'POST':
         username = request.form['username']
-        password = generate_password_hash(request.form['password'])
+        password = request.form['password']
         if User.query.filter_by(username=username).first():
             flash("Username already exists", 'error')
             return redirect(url_for('register'))
-        user = User(username=username, password=password)
+        hashed_pw = generate_password_hash(password)
+        user = User(username=username, password=hashed_pw)
         db.session.add(user)
         db.session.commit()
         login_user(user)
+        flash("Registered and logged in successfully!", 'success')
         return redirect(url_for('home'))
     return render_template('register.html')
 
@@ -62,6 +67,7 @@ def login():
         user = User.query.filter_by(username=request.form['username']).first()
         if user and check_password_hash(user.password, request.form['password']):
             login_user(user)
+            flash("Logged in successfully!", 'success')
             return redirect(url_for('home'))
         flash("Invalid credentials", 'error')
     return render_template('login.html')
@@ -71,6 +77,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+    flash("Logged out successfully.", 'info')
     return redirect(url_for('home'))
 
 
@@ -101,11 +108,11 @@ def checkout():
     return render_template('checkout.html')
 
 
-# --- Run ---
+# --- Run App ---
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        if not Product.query.first():  # Add some dummy products
+        if not Product.query.first():
             db.session.add_all([
                 Product(name="Phone", price=699,
                         description="Smartphone with 128GB storage"),
