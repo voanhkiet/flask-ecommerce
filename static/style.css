@@ -39,12 +39,3 @@ body {
     background-color: #005f5f;
   }
   
-  .flash-error {
-    color: red;
-    font-weight: bold;
-  }
-  
-  .flash-success {
-    color: green;
-    font-weight: bold;
-  }
