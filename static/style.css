@@ -38,7 +38,6 @@ body {
   button:hover, a.button:hover {
     background-color: #005f5f;
   }
-  
   .flash-error {
     color: red;
     font-weight: bold;
@@ -47,4 +46,8 @@ body {
   .flash-success {
     color: green;
     font-weight: bold;
+  }
+  
+  .flash-info {
+    color: blue;
   }
